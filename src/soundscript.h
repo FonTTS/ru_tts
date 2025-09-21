@@ -58,6 +58,7 @@ typedef struct
   size_t length;
   sound_unit_t sounds[MAX_SOUNDS];
   icb_t icb[NSTAGES];
+  uint16_t timing_rate_factor;
 } soundscript_t;
 
 

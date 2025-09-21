@@ -15,8 +15,12 @@
 #include "voice.h"
 #include "sink.h"
 
-
 /* Local data */
+
+/*
+* The speech rate threshold at which another algorithm is used to avoid crackling at high speeds.
+*/
+#define DECRACKLING_RATE_THRESHOLD 340
 
 /* Control data used to generate fully synthetic sounds */
 static const int16_t synth_ctrl_data[][2] =
@@ -192,36 +196,78 @@ void make_sound(soundscript_t *script, sink_t *consumer)
           else
             {
               /* Mixed and transitional sounds */
-              int16_t dx = 0;
-              while (l >= ax)
+
+              if (script->timing_rate_factor >= DECRACKLING_RATE_THRESHOLD)
                 {
-                  uint16_t next_pattern_offset;
-                  k = script->icb[stage].stretch;
-                  j = ((uint16_t)(script->sounds[i + 1].id)) & 0xFF;
-                  next_pattern_offset = script->voice->sound_offsets[j + 1];
-                  j = script->voice->sound_offsets[j];
-                  sink_put(consumer, 0);
-                  ax = (int16_t)(script->voice->samples[j]);
-                  do
+                  int16_t dx = 0;
+                  uint16_t next_j = ((uint16_t)(script->sounds[i + 1].id)) & 0xFF;
+                  uint16_t next_pattern_offset = script->voice->sound_offsets[next_j];
+                  uint16_t current_pattern_end = script->voice->sound_offsets[j] + scnt;
+
+                  while (l >= ax)
                     {
-                      ax -= (int16_t)(script->voice->samples[sidx]);
-                      ax = (int16_t)(((int32_t)ax) * ((int32_t)(dx++)) / ((int32_t)l));
-                      ax += (int16_t)(script->voice->samples[sidx++]);
-                      sink_put(consumer, (int8_t)ax);
-                      ax = ((++j) < next_pattern_offset) ? ((int16_t)(script->voice->samples[j])) : 0;
+                      k = script->icb[stage].stretch;
+                      uint16_t samples_to_process = k;
+
+                      do
+                        {
+                          if (sidx < current_pattern_end)
+                            {
+                              sink_put(consumer, script->voice->samples[sidx++]);
+                            }
+                          l--;
+                        }
+                      while ((--k) && (--scnt));
+
+                      if (scnt > 1)
+                        {
+                          l -= fading(consumer, script->voice, sidx);
+                        }
+                      dx += (samples_to_process - k);
+
+                      ax = dx + eval(&(script->icb[stage]));
+                      j = ((uint16_t)(script->sounds[i].id)) & 0xFF;
+                      sidx = script->voice->sound_offsets[j];
+                      scnt = script->voice->sound_lengths[j];
                     }
-                  while ((--k) && (--scnt));
-                  if (k)
-                    dx += silence(consumer, k);
-                  else if (scnt > 1)
-                    dx += fading(consumer, script->voice, sidx);
-                  ax = dx + eval(&(script->icb[stage]));
-                  j = ((uint16_t)(script->sounds[i].id)) & 0xFF;
-                  sidx = script->voice->sound_offsets[j];
-                  scnt = script->voice->sound_lengths[j];
+                  }
+              else
+                {
+                  int16_t dx = 0;
+                  while (l >= ax)
+                    {
+                      uint16_t next_pattern_offset;
+                      k = script->icb[stage].stretch;
+                      j = ((uint16_t)(script->sounds[i + 1].id)) & 0xFF;
+                      next_pattern_offset = script->voice->sound_offsets[j + 1];
+                      j = script->voice->sound_offsets[j];
+                      sink_put(consumer, 0);
+                      ax = (int16_t)(script->voice->samples[j]);
+                      do
+                        {
+                          ax -= (int16_t)(script->voice->samples[sidx]);
+                          ax = (int16_t)(((int32_t)ax) * ((int32_t)(dx++)) / ((int32_t)l));
+                          ax += (int16_t)(script->voice->samples[sidx++]);
+                          sink_put(consumer, (int8_t)ax);
+                          ax = ((++j) < next_pattern_offset) ? ((int16_t)(script->voice->samples[j])) : 0;
+                        }
+                      while ((--k) && (--scnt));
+                      if (k)
+                        {
+                          dx += silence(consumer, k);
+                        }
+                      else if (scnt > 1)
+                        {
+                          dx += fading(consumer, script->voice, sidx);
+                        }
+                      ax = dx + eval(&(script->icb[stage]));
+                      j = ((uint16_t)(script->sounds[i].id)) & 0xFF;
+                      sidx = script->voice->sound_offsets[j];
+                      scnt = script->voice->sound_lengths[j];
+                    }
+                  }
                 }
-            }
-        }
+              }
     }
 
   /* Flush output buffer */
