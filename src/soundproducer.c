@@ -210,11 +210,11 @@ void make_sound(soundscript_t *script, sink_t *consumer)
                   do
                     {
                       ax -= (int16_t)(script->voice->samples[sidx]);
-                      ax = (int16_t)(((int32_t)ax) * ((int32_t)(dx++)) / ((int32_t)l));
+                      ax = (int16_t)(((int32_t)ax * (int32_t)(dx++) + ((rand() & 7) - 2)) / (int32_t)l);
                       if (script->timing_rate_factor >= DECRACKLING_RATE_THRESHOLD)
                         {
                           static int32_t filtered = 0;
-                          filtered = filtered * ((ax - filtered));
+                          filtered = ((ax >> 1));
                           ax = (int16_t)filtered;
                         }
                       ax += (int16_t)(script->voice->samples[sidx++]);
