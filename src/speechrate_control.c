@@ -160,7 +160,7 @@ void apply_speechrate(soundscript_t *script, timing_t *timing, time_plan_ptr_t d
 {
   uint16_t i;
   uint8_t n = 1;
-  script->timing_rate_factor = timing->rate_factor;
+
   for (i = 0; i < script->length; i++)
     {
       uint8_t j = script->sounds[i].id;
