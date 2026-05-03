@@ -125,8 +125,8 @@ void timing_setup(timing_t *timing, int speech_rate, int gap_factor)
 
   if (speech_rate < 20)
     timing->rate_factor = 20;
-  else if (speech_rate > 500)
-    timing->rate_factor = 500;
+  else if (speech_rate > 1000)
+    timing->rate_factor = 1000;
   else timing->rate_factor = speech_rate;
   timing->gap_factor = (uint8_t) ((gap_factor << 2) / 5);
   for (i = 0; i < CLAUSE_SEPARATORS; i++)
