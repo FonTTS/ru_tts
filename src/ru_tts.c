@@ -54,6 +54,10 @@ static RULEXDB *rulexdb_open(const char *path, int mode)
 {
   char *err = NULL;
   dll = dlopen(RULEX_DLL, RTLD_LAZY);
+#ifdef RESERVE_RULEX_DLL
+  if (!dll)
+    dll = dlopen(RESERVE_RULEX_DLL, RTLD_LAZY);
+#endif
   if (dll)
     {
       rulexdb_open_function do_open = (rulexdb_open_function) dlsym(dll, "rulexdb_open");

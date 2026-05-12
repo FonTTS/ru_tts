@@ -44,7 +44,8 @@ AS_IF([test "x$with_dictionary" = "xyes"], [
     CHECK_FOR_LOCALES_SUPPORT
     AC_CHECK_HEADER([dlfcn.h], [], [AC_MSG_ERROR([Header file dlfcn.h is not found])])
     AC_SEARCH_LIBS([dlopen], [dl], [], [AC_MSG_ERROR([The dlopen() function is unavailable])])
-    AC_DEFINE([RULEX_DLL], ["librulexdb.so.0"], [RuLex DLL])
+    AC_DEFINE([RULEX_DLL], ["librulexdb.so.2"], [RuLex DLL])
+    AC_DEFINE([RESERVE_RULEX_DLL], ["librulexdb.so.0"], [Reserve RuLex DLL])
 ], [
     AC_DEFINE([WITHOUT_DICTIONARY], [], [Drop RuLex dictionary support])
 ])
