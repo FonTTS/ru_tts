@@ -210,7 +210,7 @@ static void synth_clause(uint8_t *transcription, ttscb_t *ttscb, uint8_t clause_
           free(draft);
         }
       apply_intonation(transcription, soundscript, &(ttscb->modulation), clause_type);
-      make_sound(soundscript, &(ttscb->wave_consumer), ttscb->timing.rate_factor, !!(ttscb->flags & USE_NEW_RATE_ALGO));
+      make_sound(soundscript, &(ttscb->wave_consumer), ttscb->timing.rate_factor);
       free(soundscript);
     }
 }
