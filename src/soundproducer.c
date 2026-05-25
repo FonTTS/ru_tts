@@ -142,22 +142,26 @@ void make_sound(soundscript_t *script, sink_t *consumer, int rate_factor, int us
                   float v1 = 0, v2 = 0, v3 = 0;
                   for (k = 0; k <= l; k++)
                     {
-                      float si;
+                      float si, res;
+                      uint16_t backup_ax;
                       int16_t tmp = ax & 0x2D;
                       tmp ^= tmp >> 4;
                       tmp &= 0x0F;
                       if ((0x6996 >> tmp) & 0x01)
                         ax |= 0x8000;
                       ax >>= 1;
-                      int16_t backup_ax = ax;
+                      backup_ax = ax;
                       ax >>= 2;
-                      v3 *= 0.5f; v3 += v3 * 0.25f;
-                      if (cx >= 0) v3 += v3 * 0.25f;
+                      v3 *= 0.5f;
+                      v3 += v3 * 0.25f;
+                      if (cx >= 0)
+                        v3 += v3 * 0.25f;
                       si = v3;
                       v3 = (v2 * 2.0f) - v1;
                       v1 = (float)ax;
-                      float res = (v3 * ((float)bx / 32768.0f)) + v1 - si;
-                      v3 = v2; v2 = res;
+                      res = (v3 * ((float)bx / 32768.0f)) + v1 - si;
+                      v3 = v2;
+                      v2 = res;
                       sink_put_clamp(consumer, v2 / (float)(1 << sample_shift));
                       ax = backup_ax;
                     }
@@ -251,7 +255,8 @@ void make_sound(soundscript_t *script, sink_t *consumer, int rate_factor, int us
                           float p = (l > 0) ? (float)dx / (float)(dx + l) : 1.0f;
                           float mu = powf(p, adaptive_power);
                           sink_put_clamp(consumer, s_curr * (1.0f - mu) + s_next * mu);
-                          dx++; sidx++;
+                          dx++;
+                          sidx++;
                           ax = ((++j) < next_pattern_offset) ? ((int16_t)(script->voice->samples[j])) : 0;
                         }
                       while ((--k) && (--scnt));
