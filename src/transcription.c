@@ -413,7 +413,7 @@ void process_text(const char *text, sink_t *consumer)
           if (s)
             {
               uint8_t char_index = s - char_list;
-              if ((char_index < 16) &&
+              if ((char_index < 17) &&
                   (last_char != '+') &&
                   (last_char != '=') &&
                   (last_char < 'A') &&
